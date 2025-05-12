@@ -1,0 +1,42 @@
+# Copyright (c) 2025 Mark Owen
+# Licensed under the MIT License. See LICENSE file in the project root for details.
+
+version: '3'
+
+tasks:
+  build:
+    desc: Build the Go binary
+    cmds:
+      - mkdir -p bin
+      - go build -o bin/schemer ./cmd/schemer
+
+  build:docker:
+    desc: Build Docker image from latest Git tag
+    deps: [build]
+    vars:
+      VERSION:
+        sh: git describe --tags --abbrev=0 | sed 's/^v//'
+    cmds:
+      - docker build -t schemer:{{.VERSION}} -t schemer:latest .
+
+  clean:
+    desc: Remove the bin directory
+    cmds:
+      - rm -rf bin
+
+  fmt:
+    desc: Format the code with gofmt
+    cmds:
+      - gofmt -w .
+
+  install:
+    desc: Install the binary to /usr/bin/
+    deps: [build]
+    cmds:
+      - sudo cp ./bin/schemer /usr/bin/
+      - sudo chmod +x /usr/bin/schemer
+
+  uninstall:
+    desc: Uninstall the binary from /usr/bin/
+    cmds:
+      - sudo rm -f /usr/bin/schemer
