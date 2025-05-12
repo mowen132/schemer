@@ -77,12 +77,12 @@
 Configure `schemer` using the following environment variables:
 
 - `DB_DRIVER` The database driver to use (e.g., postgres, mysql).
-- `DB_CONN` Optional. Full connection string (DSN). If set, overrides all other DB_* variables except DB_DRIVER. Use this for advanced settings (e.g., SSL, timeouts) when basic DB_* values are not sufficient.
 - `DB_USER` Database username.
 - `DB_PASS` Database password.
 - `DB_HOST` Database hostname.
 - `DB_PORT` Database port. Optional — defaults to the standard port for the selected driver (5432 for postgres, 3306 for mysql).
 - `DB_NAME` Database name.
+- `DB_CONN` Optional. Full connection string (DSN). If set, overrides all other DB_* variables except DB_DRIVER. Use this for advanced settings (e.g., SSL, timeouts) when basic DB_* values are not sufficient.
 - `MIGRATIONS` Path to the directory containing migration files.
 
 ### Supported Drivers:
