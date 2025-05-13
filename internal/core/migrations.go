@@ -139,7 +139,7 @@ func (m *Migration) load() error {
 
 	loader := newMigrationLoader(lines)
 
-	if err := loader.skipHeader(); err != nil {
+	if err := loader.ignoreHeader(); err != nil {
 		return err
 	}
 
@@ -276,7 +276,7 @@ func newMigrationLoader(lines []string) *migrationLoader {
 	}
 }
 
-func (l *migrationLoader) skipHeader() error {
+func (l *migrationLoader) ignoreHeader() error {
 	for {
 		if l.eof() {
 			return invalidFileErrorf("missing required '-- @up'")
