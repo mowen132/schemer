@@ -29,9 +29,9 @@ type Migration struct {
 type actionType int
 
 const (
-	noAction actionType = iota
-	upAction
-	downAction
+	actionNone actionType = iota
+	actionUp
+	actionDown
 )
 
 func LoadMigrations(dir string) (Migrations, error) {
@@ -104,7 +104,7 @@ func (ms Migrations) search(version int64) (int, bool) {
 
 func (m *Migration) run(action actionType, conn *Connection, final int64) error {
 	get := func(action actionType, up, down string) string {
-		if action == upAction {
+		if action == actionUp {
 			return up
 		}
 
@@ -176,8 +176,8 @@ func resolveExecutionPlan(cmd *input.Command, version int64, migrations Migratio
 	plan := &executionPlan{}
 
 	switch cmd.Type {
-	case input.UpCommand:
-		plan.action = upAction
+	case input.CommandUp:
+		plan.action = actionUp
 		plan.beg = cur + 1
 		last := len(migrations) - 1
 
@@ -187,8 +187,8 @@ func resolveExecutionPlan(cmd *input.Command, version int64, migrations Migratio
 			plan.end = last
 		}
 
-	case input.DownCommand:
-		plan.action = downAction
+	case input.CommandDown:
+		plan.action = actionDown
 		plan.beg = cur
 
 		if cmd.HasOperand {
@@ -197,7 +197,7 @@ func resolveExecutionPlan(cmd *input.Command, version int64, migrations Migratio
 			plan.end = -1
 		}
 
-	case input.GotoCommand:
+	case input.CommandGoto:
 		tar, ok := migrations.search(cmd.Operand)
 
 		if !ok {
@@ -205,15 +205,15 @@ func resolveExecutionPlan(cmd *input.Command, version int64, migrations Migratio
 		}
 
 		if cur < tar {
-			plan.action = upAction
+			plan.action = actionUp
 			plan.beg = cur + 1
 			plan.end = tar
 		} else if cur > tar {
-			plan.action = downAction
+			plan.action = actionDown
 			plan.beg = cur
 			plan.end = tar
 		} else {
-			plan.action = noAction
+			plan.action = actionNone
 		}
 	}
 
@@ -222,16 +222,16 @@ func resolveExecutionPlan(cmd *input.Command, version int64, migrations Migratio
 
 func (p *executionPlan) execute(conn *Connection, migrations Migrations) error {
 	switch p.action {
-	case upAction:
+	case actionUp:
 		for i := p.beg; i <= p.end; i++ {
 			migration := migrations[i]
 
-			if err := migration.run(upAction, conn, migration.Version); err != nil {
+			if err := migration.run(actionUp, conn, migration.Version); err != nil {
 				return fmt.Errorf("%q: %v", migration.Name, err)
 			}
 		}
 
-	case downAction:
+	case actionDown:
 		if p.beg == -1 {
 			return nil
 		}
@@ -245,7 +245,7 @@ func (p *executionPlan) execute(conn *Connection, migrations Migrations) error {
 		for i := p.beg; i > p.end; i-- {
 			migration := migrations[i]
 
-			if err := migration.run(downAction, conn, migrations[i-1].Version); err != nil {
+			if err := migration.run(actionDown, conn, migrations[i-1].Version); err != nil {
 				return fmt.Errorf("%q: %v", migration.Name, err)
 			}
 		}
@@ -253,7 +253,7 @@ func (p *executionPlan) execute(conn *Connection, migrations Migrations) error {
 		if zero {
 			migration := migrations[0]
 
-			if err := migration.run(downAction, conn, 0); err != nil {
+			if err := migration.run(actionDown, conn, 0); err != nil {
 				return fmt.Errorf("%q: %v", migration.Name, err)
 			}
 		}

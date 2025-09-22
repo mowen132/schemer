@@ -17,7 +17,7 @@ func main() {
 	cmd, err := input.ParseCommand(os.Args[1:])
 	e.handle(err, "parsing command-line arguments")
 
-	if cmd.Type == input.HelpCommand {
+	if cmd.Type == input.CommandHelp {
 		fmt.Print(usage)
 		return
 	}

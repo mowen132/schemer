@@ -17,10 +17,10 @@ type Command struct {
 type CommandType int
 
 const (
-	UpCommand CommandType = iota
-	DownCommand
-	GotoCommand
-	HelpCommand
+	CommandUp CommandType = iota
+	CommandDown
+	CommandGoto
+	CommandHelp
 )
 
 func ParseCommand(args []string) (*Command, error) {
@@ -37,9 +37,9 @@ func ParseCommand(args []string) (*Command, error) {
 		var t CommandType
 
 		if name == "up" {
-			t = UpCommand
+			t = CommandUp
 		} else {
-			t = DownCommand
+			t = CommandDown
 		}
 
 		if n == 1 {
@@ -72,14 +72,14 @@ func ParseCommand(args []string) (*Command, error) {
 		}
 
 		return &Command{
-			Type:       GotoCommand,
+			Type:       CommandGoto,
 			HasOperand: true,
 			Operand:    tar,
 		}, nil
 
 	case "help":
 		return &Command{
-			Type: HelpCommand,
+			Type: CommandHelp,
 		}, nil
 	}
 
